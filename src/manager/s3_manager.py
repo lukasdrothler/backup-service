@@ -65,20 +65,27 @@ class S3Manager:
         )
 
 
-    def encrypt_age_file(self, file_path, output_file_path=None):
+    def encrypt_age_file(self, file_path, output_file_path=None, cleanup=True):
         if output_file_path is None:
             output_file_path = file_path + ".enc"
         try:
             subprocess.run(['sops', '--encrypt', '--age', self.age_public_key, '--output', output_file_path, file_path])
             logger.info(f"File encrypted: {file_path} to {output_file_path}")
-            return output_file_path
         except Exception as e:
             logger.error(f"Failed to encrypt file: {file_path}. Error: {e}")
+            return None
+
+        if cleanup:
+            try:
+                subprocess.run(['rm', '-f', file_path])
+            except Exception as e:
+                logger.warning(f"Failed to remove original file: {file_path}. Error: {e}")
+        return output_file_path
 
 
-    def upload_file(self, file_path, key, encrypt=True):
+    def upload_file(self, file_path, key, encrypt=True, cleanup=True):
         if encrypt:
-            _file_path = self.encrypt_age_file(file_path)
+            _file_path = self.encrypt_age_file(file_path, cleanup=cleanup)
         else:
             _file_path = file_path
         try:
@@ -86,4 +93,9 @@ class S3Manager:
             logger.info(f"File uploaded: {_file_path} to {self.bucket_name}/{key}")
         except Exception as e:
             logger.error(f"Failed to upload file: {_file_path} to {self.bucket_name}/{key}. Error: {e}")
-        
+
+        if cleanup:
+            try:
+                subprocess.run(['rm', '-f', _file_path])
+            except Exception as e:
+                logger.warning(f"Failed to remove file: {_file_path}. Error: {e}")

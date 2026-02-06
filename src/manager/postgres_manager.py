@@ -4,8 +4,10 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 class PostgresManager:
-    def __init__(self):
-        """Initialize the database service with environment variables"""
+    def __init__(self, stage="", db_name=None):
+        self.stage = stage
+        self.stage_prefix = f"{stage}_" if stage else ""
+
         if "PGHOST" in os.environ:
             self.host = os.environ["PGHOST"]
             logger.info(f"Using database host '{self.host}' from environment variable 'PGHOST'")
@@ -33,26 +35,29 @@ class PostgresManager:
         else:
             raise ValueError("Environment variable 'PGPASSWORD' not set")
 
-        if "PGDATABASE" in os.environ:
+        if db_name:
+            self.db_name = db_name
+            logger.info(f"Using database name '{self.db_name}' from argument")
+        elif "PGDATABASE" in os.environ:
             self.db_name = os.environ["PGDATABASE"]
             logger.info(f"Using database name '{self.db_name}' from environment variable 'PGDATABASE'")
         else:
-            self.db_name = "auth"
-            logger.warning(f"Using database name '{self.db_name}' since 'PGDATABASE' not set")
+            raise ValueError("Database name must be specified either as an argument or in the environment variable 'PGDATABASE'")
 
-        if "PGBACKUPDIR" in os.environ:
-            self.backup_dir = os.environ["PGBACKUPDIR"]
-            logger.info(f"Using backup directory '{self.backup_dir}' from environment variable 'PGBACKUPDIR'")
+        if "BACKUPDIR" in os.environ:
+            self.backup_dir = os.environ["BACKUPDIR"]
+            logger.info(f"Using backup directory '{self.backup_dir}' from environment variable 'BACKUPDIR'")
         else:
             self.backup_dir = "/tmp"
-            logger.warning(f"Using backup directory '{self.backup_dir}' since 'PGBACKUPDIR' not set")
+            logger.warning(f"Using backup directory '{self.backup_dir}' since 'BACKUPDIR' not set")
 
         logger.info("PostgresManager initialized")
 
 
     def pg_dump(self):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        backup_file = os.path.join(self.backup_dir, f"{self.db_name}_{timestamp}.dump")
+        backup_file_basename = f"{self.db_name}_{self.stage_prefix}{timestamp}.dump"
+        backup_file = os.path.join(self.backup_dir, backup_file_basename)
 
         logger.info(f"Starting backup for database '{self.db_name}'...")
 
