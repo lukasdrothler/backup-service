@@ -27,6 +27,8 @@ def main():
                 restore_postgres(args.backup_file)
             else:
                 raise ValueError("Backup file must be specified for restore")
+    else:
+        print("Use arguments to choose an action")
 
 
 
