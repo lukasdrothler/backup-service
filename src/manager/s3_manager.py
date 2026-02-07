@@ -56,8 +56,11 @@ class S3Manager:
             aws_access_key_id=self.access_key_id,
             aws_secret_access_key=self.secret_key,
             config=Config(
-                signature_version='s3',
-                s3={'addressing_style': 'path'}
+                signature_version='s3v4',
+                s3={
+                    'payload_signing_enabled': True,
+                    'addressing_style': 'virtual',
+                },
             )
         )
 
