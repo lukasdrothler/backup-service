@@ -1,6 +1,5 @@
 from boto3 import client
 from botocore.client import Config
-import requests
 
 import logging, os
 import subprocess
@@ -31,12 +30,12 @@ class S3Manager:
             logger.info(f"S3 region name set to default: {self.region_name}")
 
         if "S3_ACCESS_KEY_ID" in os.environ:
-            self.access_key_id = os.environ["S3_ACCESS_KEY_ID"].strip()
+            self.access_key_id = os.environ["S3_ACCESS_KEY_ID"]
         else:
             raise ValueError("S3_ACCESS_KEY_ID environment variable is required")
 
         if "S3_SECRET_KEY" in os.environ:
-            self.secret_key = os.environ["S3_SECRET_KEY"].strip()
+            self.secret_key = os.environ["S3_SECRET_KEY"]
         else:
             raise ValueError("S3_SECRET_KEY environment variable is required")
         
@@ -59,7 +58,7 @@ class S3Manager:
             config=Config(
                 signature_version='s3v4',
                 s3={
-                    'payload_signing_enabled': True,
+                    'payload_signing_enabled': False,
                     'addressing_style': 'virtual',
                 },
             )
@@ -90,19 +89,7 @@ class S3Manager:
         else:
             _file_path = file_path
         try:
-            url = self.client.generate_presigned_url(
-                ClientMethod='put_object',
-                Params={
-                    'Bucket': self.bucket_name,
-                    'Key': key
-                },
-                ExpiresIn=3600
-            )
-            with open(_file_path, 'rb') as f:
-                # Get file size for Content-Length header
-                file_size = os.path.getsize(_file_path)
-                response = requests.put(url, data=f, headers={'Content-Length': str(file_size)})
-                response.raise_for_status()
+            self.client.upload_file(_file_path, self.bucket_name, key)
             logger.info(f"File uploaded: {_file_path} to {self.bucket_name}/{key}")
         except Exception as e:
             logger.error(f"Failed to upload file: {_file_path} to {self.bucket_name}/{key}. Error: {e}")
