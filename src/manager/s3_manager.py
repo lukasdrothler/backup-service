@@ -1,5 +1,6 @@
 from boto3 import client
 from botocore.client import Config
+import requests
 
 import logging, os
 import subprocess
@@ -89,7 +90,17 @@ class S3Manager:
         else:
             _file_path = file_path
         try:
-            self.client.upload_file(_file_path, self.bucket_name, key)
+            url = self.client.generate_presigned_url(
+                ClientMethod='put_object',
+                Params={
+                    'Bucket': self.bucket_name,
+                    'Key': key
+                },
+                ExpiresIn=3600
+            )
+            with open(_file_path, 'rb') as f:
+                response = requests.put(url, data=f)
+                response.raise_for_status()
             logger.info(f"File uploaded: {_file_path} to {self.bucket_name}/{key}")
         except Exception as e:
             logger.error(f"Failed to upload file: {_file_path} to {self.bucket_name}/{key}. Error: {e}")
