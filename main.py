@@ -36,7 +36,7 @@ def main():
             backup_postgres(stage, args.db_name)
         else:
             if args.backup_file:
-                restore_postgres(args.backup_file)
+                restore_postgres(args.backup_file, args.db_name)
             else:
                 raise ValueError("Backup file must be specified for restore")
     else:

@@ -17,9 +17,9 @@ def backup_postgres(stage="", db_name=None):
 
     logger.info("PostgreSQL backup completed")
 
-def restore_postgres(backup_file):
+def restore_postgres(backup_file, db_name=None):
     logger.info("Starting PostgreSQL restore")
-    pg_manager = PostgresManager()
+    pg_manager = PostgresManager(db_name=db_name)
     pg_manager.restore_backup(backup_file)
     logger.info("PostgreSQL restore completed")
 
