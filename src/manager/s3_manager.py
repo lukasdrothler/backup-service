@@ -31,12 +31,12 @@ class S3Manager:
             logger.info(f"S3 region name set to default: {self.region_name}")
 
         if "S3_ACCESS_KEY_ID" in os.environ:
-            self.access_key_id = os.environ["S3_ACCESS_KEY_ID"]
+            self.access_key_id = os.environ["S3_ACCESS_KEY_ID"].strip()
         else:
             raise ValueError("S3_ACCESS_KEY_ID environment variable is required")
 
         if "S3_SECRET_KEY" in os.environ:
-            self.secret_key = os.environ["S3_SECRET_KEY"]
+            self.secret_key = os.environ["S3_SECRET_KEY"].strip()
         else:
             raise ValueError("S3_SECRET_KEY environment variable is required")
         
@@ -99,7 +99,9 @@ class S3Manager:
                 ExpiresIn=3600
             )
             with open(_file_path, 'rb') as f:
-                response = requests.put(url, data=f)
+                # Get file size for Content-Length header
+                file_size = os.path.getsize(_file_path)
+                response = requests.put(url, data=f, headers={'Content-Length': str(file_size)})
                 response.raise_for_status()
             logger.info(f"File uploaded: {_file_path} to {self.bucket_name}/{key}")
         except Exception as e:
