@@ -59,7 +59,7 @@ class S3Manager:
                 signature_version='s3v4',
                 s3={
                     'payload_signing_enabled': False,
-                    'addressing_style': 'virtual',
+                    'addressing_style': 'path',
                 },
             )
         )
