@@ -4,9 +4,8 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 class PostgresManager:
-    def __init__(self, stage="", db_name=None):
+    def __init__(self, stage=None, db_name=None):
         self.stage = stage
-        self.stage_prefix = f"{stage}_" if stage else ""
 
         if "PGHOST" in os.environ:
             self.host = os.environ["PGHOST"]
@@ -56,7 +55,7 @@ class PostgresManager:
 
     def pg_dump(self):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        backup_file_basename = f"{self.db_name}_{self.stage_prefix}{timestamp}.dump"
+        backup_file_basename = f"{self.db_name}_{timestamp}.dump"
         backup_file = os.path.join(self.backup_dir, backup_file_basename)
 
         logger.info(f"Starting backup for database '{self.db_name}'...")

@@ -5,15 +5,18 @@ import logging, os, subprocess
 
 logger = logging.getLogger(__name__)
 
-def backup_postgres(stage="", db_name=None):
+def backup_postgres(stage=None, db_name=None):
     logger.info("Starting PostgreSQL backup")
     pg_manager = PostgresManager(stage, db_name)
     s3_manager = S3Manager()
 
     pgdump_file = pg_manager.pg_dump()
     remote_file_basename = os.path.basename(pgdump_file)
-
-    s3_manager.upload_file(pgdump_file, f"pgdumps/enc.{remote_file_basename}", encrypt=True)
+    stage_dir = ""
+    if stage is not None and stage != "":
+        stage_dir = f"{stage}/"
+    s3_filename = f"backups/postgres/{stage_dir}enc.{remote_file_basename}"
+    s3_manager.upload_file(pgdump_file, s3_filename, encrypt=True)
 
     logger.info("PostgreSQL backup completed")
 
