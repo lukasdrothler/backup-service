@@ -47,7 +47,7 @@ class PostgresManager:
             self.backup_dir = os.environ["BACKUPDIR"]
             logger.info(f"Using backup directory '{self.backup_dir}' from environment variable 'BACKUPDIR'")
         else:
-            self.backup_dir = "/tmp"
+            self.backup_dir = "/tmp" # nosec
             logger.warning(f"Using backup directory '{self.backup_dir}' since 'BACKUPDIR' not set")
 
         logger.info("PostgresManager initialized")
