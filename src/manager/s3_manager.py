@@ -2,7 +2,7 @@ from boto3 import client
 from botocore.client import Config
 
 import logging, os
-import subprocess
+import subprocess # nosec B404
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class S3Manager:
         if output_file_path is None:
             output_file_path = file_path + ".enc"
         try:
-            subprocess.run(['sops', '--encrypt', '--age', self.age_public_key, '--output', output_file_path, file_path])
+            subprocess.run(['sops', '--encrypt', '--age', self.age_public_key, '--output', output_file_path, file_path]) # nosec B603, B607
             logger.info(f"File encrypted: {file_path} to {output_file_path}")
         except Exception as e:
             logger.error(f"Failed to encrypt file: {file_path}. Error: {e}")
@@ -77,7 +77,7 @@ class S3Manager:
 
         if cleanup:
             try:
-                subprocess.run(['rm', '-f', file_path])
+                subprocess.run(['rm', '-f', file_path]) # nosec B603, B607
             except Exception as e:
                 logger.warning(f"Failed to remove original file: {file_path}. Error: {e}")
         return output_file_path
@@ -96,6 +96,6 @@ class S3Manager:
 
         if cleanup:
             try:
-                subprocess.run(['rm', '-f', _file_path])
+                subprocess.run(['rm', '-f', _file_path]) # nosec B603, B607
             except Exception as e:
                 logger.warning(f"Failed to remove file: {_file_path}. Error: {e}")

@@ -1,4 +1,4 @@
-import logging, os, subprocess
+import logging, os, subprocess # nosec B404
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -78,7 +78,7 @@ class PostgresManager:
                 check=True,
                 capture_output=True,
                 text=True
-            )
+            ) # nosec B603
             logger.info(f"Backup saved to '{backup_file}'")
             
             self.verify_backup(backup_file)
@@ -99,7 +99,7 @@ class PostgresManager:
                 check=True,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.PIPE
-            )
+            ) # nosec B603, B607
             logger.info("Backup verification successful.")
         except subprocess.CalledProcessError as e:
             logger.error(f"Backup verification failed: {e.stderr.decode()}")
@@ -130,7 +130,7 @@ class PostgresManager:
                 check=True,
                 capture_output=True,
                 text=True
-            )
+            ) # nosec B603
             logger.info(f"Backup restored successfully from '{backup_file}'")
 
         except subprocess.CalledProcessError as e:

@@ -1,7 +1,7 @@
 from src.manager.s3_manager import S3Manager
 from src.manager.postgres_manager import PostgresManager
 
-import logging, os, subprocess
+import logging, os
 
 logger = logging.getLogger(__name__)
 
