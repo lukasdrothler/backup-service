@@ -39,8 +39,15 @@ class S3Manager:
         else:
             raise ValueError("S3_SECRET_KEY environment variable is required")
         
+        if "SOPS_AGE_KEY_FILE" in os.environ:
+            self.sops_age_key_file = os.environ["SOPS_AGE_KEY_FILE"]
+            logger.info(f"SOPS age key file set from env: {self.sops_age_key_file}")
+        else:
+            raise ValueError("SOPS_AGE_KEY_FILE environment variable is required")
+
         if "AGE_PUBLIC_KEY" in os.environ:
             self.age_public_key = os.environ["AGE_PUBLIC_KEY"]
+            logger.info(f"AGE public key set from env: {self.age_public_key}")
         else:
             raise ValueError("AGE_PUBLIC_KEY environment variable is required")
         
@@ -83,6 +90,21 @@ class S3Manager:
         return output_file_path
 
 
+    def decrypt_age_file(self, file_path, output_file_path, cleanup=True):
+        try:
+            subprocess.run(['sops', '--decrypt', '--output', output_file_path, file_path]) # nosec B603, B607
+            logger.info(f"File decrypted: {file_path} to {output_file_path}")
+        except Exception as e:
+            logger.error(f"Failed to decrypt file: {file_path}. Error: {e}")
+            return None
+
+        if cleanup:
+            try:
+                subprocess.run(['rm', '-f', file_path]) # nosec B603, B607
+            except Exception as e:
+                logger.warning(f"Failed to remove encrypted file: {file_path}. Error: {e}")
+        return output_file_path
+
     def upload_file(self, file_path, key, encrypt=True, cleanup=True):
         if encrypt:
             _file_path = self.encrypt_age_file(file_path, cleanup=cleanup)
@@ -99,3 +121,22 @@ class S3Manager:
                 subprocess.run(['rm', '-f', _file_path]) # nosec B603, B607
             except Exception as e:
                 logger.warning(f"Failed to remove file: {_file_path}. Error: {e}")
+
+
+    def download_file(self, key, file_path, decrypt=True, cleanup=True):
+        try:
+            self.client.download_file(self.bucket_name, key, file_path)
+            logger.info(f"File downloaded: {self.bucket_name}/{key} to {file_path}")
+        except Exception as e:
+            logger.error(f"Failed to download file: {self.bucket_name}/{key} to {file_path}. Error: {e}")
+            return None
+
+        if decrypt:
+            decrypted_file_path = file_path + ".decrypted"
+            decrypted_file = self.decrypt_age_file(file_path, decrypted_file_path, cleanup=cleanup)
+            if decrypted_file is not None:
+                return decrypted_file
+            else:
+                return None
+        else:
+            return file_path

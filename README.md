@@ -45,7 +45,6 @@ The service is configured via environment variables. You can set these in a `.en
 | `PGPORT` | Database port | `5432` |
 | `PGUSER` | Database username | `root` |
 | `PGPASSWORD` | **Required**. Database password | - |
-| `PGDATABASE` | Database name (can also be passed via arg) | - |
 | `BACKUPDIR` | Temporary directory for storing dumps | `/tmp` |
 
 ### S3 Configuration
@@ -61,6 +60,7 @@ The service is configured via environment variables. You can set these in a `.en
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `AGE_PUBLIC_KEY` | **Required**. Public key for `age` encryption | - |
+| `SOPS_AGE_KEY_FILE` | **Required**. Path to the `age` key file for decryption (e.g. for restore) | - |
 
 ## Usage
 
@@ -71,24 +71,26 @@ The service is controlled via `main.py` CLI arguments.
 To backup a specific database and upload it to S3:
 
 ```bash
-python3 main.py --postgres --db-name my_database --stage prod
+python3 main.py --postgres --backup --db-name my_database --stage prod
 ```
 *   `--postgres`: Activates PostgreSQL mode.
+*   `--backup`: Activates backup mode.
 *   `--db-name`: The name of the database to backup.
 *   `--stage`: (Optional) Adds a prefix to the backup file (e.g., `prod_...`).
 
 ### Restoring a Database
 
-To restore a database from a local backup file:
+To restore a database from a remote S3 backup file:
 
 ```bash
-python3 main.py --postgres --restore --db-name my_database --backup-file path/to/backup.dump
+python3 main.py --postgres --restore --db-name my_database --backup-file backups/postgres/prod/my_database/enc.my_database_20231027100000.dump
 ```
 *   `--restore`: Activates restore mode.
-*   `--backup-file`: Path to the dump file to restore.
+*   `--backup-file`: Remote S3 path to the encrypted dump file to restore.
+*   `--db-name`: The name of the database to restore into.
 
 ### Docker Usage Example
 
 ```bash
-docker run --env-file .env backup-service --postgres --db-name my_database
+docker run --env-file .env backup-service --postgres --backup --db-name my_database
 ```

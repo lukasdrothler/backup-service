@@ -20,8 +20,9 @@ def main():
     # specific postgres arguments
     parser.add_argument('--postgres', action='store_true', help='Backup PostgreSQL database')
     parser.add_argument('--db-name', type=str, help='Database name')
+    parser.add_argument('--backup', action='store_true', help='Backup PostgreSQL database')
     parser.add_argument('--restore', action='store_true', help='Restore PostgreSQL database from backup')
-    parser.add_argument('--backup-file', type=str, help='Backup file to restore from')
+    parser.add_argument('--backup-file', type=str, help='Remote path to backup file to restore from')
 
     args = parser.parse_args()
 
@@ -32,13 +33,15 @@ def main():
         stage = ""
 
     if args.postgres:
-        if not args.restore:
+        if args.backup:
             backup_postgres(stage, args.db_name)
-        else:
+        elif args.restore:
             if args.backup_file:
                 restore_postgres(args.backup_file, args.db_name)
             else:
                 raise ValueError("Backup file must be specified for restore")
+        else:
+            raise ValueError("Either --backup or --restore must be specified for PostgreSQL")
     else:
         print("Use arguments to choose an action")
 

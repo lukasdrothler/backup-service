@@ -4,7 +4,7 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 class PostgresManager:
-    def __init__(self, stage=None, db_name=None):
+    def __init__(self, db_name, stage=None):
         self.stage = stage
 
         if "PGHOST" in os.environ:
@@ -34,15 +34,12 @@ class PostgresManager:
         else:
             raise ValueError("Environment variable 'PGPASSWORD' not set")
 
-        if db_name:
+        if db_name is not None and db_name != "":
             self.db_name = db_name
             logger.info(f"Using database name '{self.db_name}' from argument")
-        elif "PGDATABASE" in os.environ:
-            self.db_name = os.environ["PGDATABASE"]
-            logger.info(f"Using database name '{self.db_name}' from environment variable 'PGDATABASE'")
         else:
-            raise ValueError("Database name must be specified either as an argument or in the environment variable 'PGDATABASE'")
-
+            raise ValueError("Database name must be specified as an argument")
+        
         if "BACKUPDIR" in os.environ:
             self.backup_dir = os.environ["BACKUPDIR"]
             logger.info(f"Using backup directory '{self.backup_dir}' from environment variable 'BACKUPDIR'")
