@@ -55,18 +55,18 @@ jobs:
         with:
           repository: lukasdrothler/k8s-flux
           token: ${{ secrets.GITOPS_PAT }}
-          path: apps/base
+          path: apps/inte/backup-service
 
       - name: Update Image Tag
         run: |
           # Navigate to the directory containing kustomization.yaml
-          cd apps/base
+          cd apps/inte/backup-service
           
           # Update the image tag using sed
-          sed -i '/name: ghcr.io\/lukasdrothler\/backup-service/,/newTag:/ s|newTag: .*|newTag: ${{ github.sha }}|' apps/base/kustomization.yaml
+          sed -i '/name: ghcr.io\/lukasdrothler\/backup-service/,/newTag:/ s|newTag: .*|newTag: ${{ github.sha }}|' apps/inte/backup-service/kustomization.yaml
       - name: Commit and Push Changes
         run: |
-          cd apps/base
+          cd apps/inte/backup-service
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
