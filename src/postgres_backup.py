@@ -14,11 +14,11 @@ def backup_postgres(stage=None, db_name=None):
     pgdump_file = pg_manager.pg_dump()
     remote_file_basename = os.path.basename(pgdump_file)
     stage_dir = ""
-    if stage is not None and stage != "":
-        stage_dir = f"{stage}"
+    if stage is not None and stage != "" and stage.lower() != "prod":
+        stage_dir = f"{stage}/"
     if db_name is not None and db_name != "":
-        db_name_dir = f"{db_name}"
-    s3_filename = f"backups/postgres/{stage_dir}/{db_name_dir}/enc.{remote_file_basename}"
+        db_name_dir = f"{db_name}/"
+    s3_filename = f"backups/postgres/{stage_dir}{db_name_dir}enc.{remote_file_basename}"
     s3_manager.upload_file(pgdump_file, s3_filename, encrypt=True)
 
     logger.info("PostgreSQL backup completed")
